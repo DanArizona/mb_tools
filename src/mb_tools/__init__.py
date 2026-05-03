@@ -1,8 +1,5 @@
 from importlib.metadata import version as _dist_version
 
-__version__ = _dist_version("mb-tools")  # distribution name from pyproject.toml
+__version__ = _dist_version("mb-tools")
 
-# export your public API
-from .config import MBConfig, load_mb_config
-
-__all__ = ["MBConfig", "load_mb_config", "__version__"]
+__all__ = ["__version__"]

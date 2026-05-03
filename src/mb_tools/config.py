@@ -1,3 +1,32 @@
+"""
+mb_tools.config
+
+Configuration loader for MB_* environment variables.
+
+Precedence:
+    1. Windows environment variables
+    2. User/project .env file
+    3. Packaged defaults.env file
+
+This module does not modify os.environ. It reads configuration values and
+returns an MBConfig object containing resolved values and source information.
+
+Typical usage:
+
+    from mb_tools.config import load_mb_config
+
+    cfg = load_mb_config(verbose=False)
+
+    scans_dir = cfg.get("MB_SCANS")
+    vault_dir = cfg.get_path("MB_VAULT")
+
+Diagnostic usage:
+
+    from mb_tools.config import print_mb_config
+
+    print_mb_config()
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -5,7 +34,6 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple, List
 import os
 import importlib.resources as resources
-
 
 MB_PREFIX = "MB_"
 
@@ -86,6 +114,14 @@ def load_mb_config(
     verbose: bool = True,
 ) -> MBConfig:
     """
+    Load MB_* configuration values.
+
+    Returns:
+        MBConfig containing:
+            values: resolved key/value pairs
+            sources: source for each key: "env", "dotenv", or "defaults"
+            errors: non-fatal configuration issues
+    
     Precedence:
       1) Effective Windows env (os.environ) for keys starting with MB_
       2) .env file values (only if key missing from env)
@@ -107,7 +143,9 @@ def load_mb_config(
         values[k] = v
         sources[k] = "env"
     if verbose:
-        say(f"[config] Found {len(env_mb)} '{MB_PREFIX}*' variables in Windows env")
+        say(f"[config] Found {len(env_mb)} '{MB_PREFIX}*' variables in Windows env:")
+        for key in sorted(env_mb):
+            say(f"[config]   {key}")
 
     # 2) Project .env
     dotenv_vars: Dict[str, str] = {}
@@ -160,3 +198,53 @@ def load_mb_config(
 
     return MBConfig(values=values, sources=sources, errors=errors)
     
+def print_mb_config(config: MBConfig | None = None) -> None:
+    """
+    Diagnostic helper: print resolved MB_* values and their sources.
+    """
+    if config is None:
+        config = load_mb_config(verbose=False)
+
+    source_labels = {
+        "env": "Windows environment",
+        "dotenv": "user .env",
+        "defaults": "package defaults.env",
+    }
+
+    for key in sorted(config.values):
+        source = source_labels.get(config.sources.get(key, "unknown"), "unknown")
+
+        print(key)
+        print(f"  value : {config.values[key]}")
+        print(f"  source: {source}")
+        print()
+
+
+def main() -> None:
+    """
+    Command-line diagnostic entry point.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Show resolved MB_* configuration values and their sources."
+    )
+    parser.add_argument(
+        "--env-file",
+        default=".env",
+        help="Path to user/project .env file. Default: .env",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show detailed loading messages.",
+    )
+
+    args = parser.parse_args()
+
+    cfg = load_mb_config(dotenv_path=args.env_file, verbose=args.verbose)
+    print_mb_config(cfg)
+
+
+if __name__ == "__main__":
+    main()
