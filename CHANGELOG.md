@@ -16,6 +16,24 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 
 ---
 
+## [0.2.0] - 2026-05-04
+### Added
+- Added `logging_queue.py`, a queue-based logging module for threaded applications.
+- Added `setup_logging()`, `get_logger()`, `shutdown_logging()`, and `logging_context()` as the public API for queue-based logging.
+- Added timestamped log file creation using the current run date/time.
+- Added an `ALL` log file that receives records from the main thread and all worker threads.
+- Added a `MAIN` log file that receives only records emitted by the main thread.
+- Added automatic per-thread log files for non-main worker threads.
+- Added optional console echoing of log records.
+- Added safe log filename handling for application names and thread names.
+- Added a small built-in demo for verifying main-thread and worker-thread logging behavior.
+
+### Changed
+
+- Kept `logging_utils.py` active for compatibility while introducing `logging_queue.py` as the fuller queue-based logging implementation.
+
+
+
 ## [0.1.0] - 2026-05-03
 ### Added
 - Initial project scaffold with `src/` layout:
