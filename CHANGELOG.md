@@ -16,6 +16,19 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 
 ---
 
+
+## [0.3.0] - Unreleased
+### Added
+- Added `mb_tools.secure_config`, a password-based encrypted configuration module.
+- Added support for saving and loading encrypted dictionary-style `.ecfg` files.
+- Embedded the encryption salt directly in the `.ecfg` file, avoiding the need for a separate salt file.
+- Added helper function for retrieving a single encrypted configuration value by key.
+
+### Notes
+- The password is supplied by the calling application and is not stored by the module.
+- The initial implementation is GUI-independent; PySide6 password dialogs and editor tools may be added later as optional helpers.
+
+
 ## [0.2.0] - 2026-05-04
 ### Added
 - Added `logging_queue.py`, a queue-based logging module for threaded applications.
