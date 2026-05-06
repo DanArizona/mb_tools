@@ -18,11 +18,11 @@ from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
-    QHBoxLayout,
+    # QHBoxLayout,
     QHeaderView,
     QMainWindow,
     QMessageBox,
-    QPushButton,
+    # QPushButton,
     QTableWidget,
     QTableWidgetItem,
     QToolBar,
@@ -95,8 +95,17 @@ class EcfgEditorWindow(QMainWindow):
         self._exit_action = QAction("Exit", self)
         self._exit_action.triggered.connect(self.close)
 
-        self._add_row_action = QAction("Add Row", self)
-        self._add_row_action.triggered.connect(self.add_row)
+        # self._add_row_action = QAction("Add Row", self)
+        # self._add_row_action.triggered.connect(self.add_row)
+
+        # self._delete_row_action = QAction("Delete Row", self)
+        # self._delete_row_action.triggered.connect(self.delete_selected_rows)
+
+        self._add_row_before_action = QAction("Add Row Before", self)
+        self._add_row_before_action.triggered.connect(self.add_row_before)
+
+        self._add_row_after_action = QAction("Add Row After", self)
+        self._add_row_after_action.triggered.connect(self.add_row_after)
 
         self._delete_row_action = QAction("Delete Row", self)
         self._delete_row_action.triggered.connect(self.delete_selected_rows)
@@ -111,8 +120,14 @@ class EcfgEditorWindow(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(self._exit_action)
 
+        # edit_menu = self.menuBar().addMenu("Edit")
+        # edit_menu.addAction(self._add_row_action)
+        # edit_menu.addAction(self._delete_row_action)
+
         edit_menu = self.menuBar().addMenu("Edit")
-        edit_menu.addAction(self._add_row_action)
+        edit_menu.addAction(self._add_row_before_action)
+        edit_menu.addAction(self._add_row_after_action)
+        edit_menu.addSeparator()
         edit_menu.addAction(self._delete_row_action)
 
     def _build_toolbar(self) -> None:
@@ -123,29 +138,42 @@ class EcfgEditorWindow(QMainWindow):
         toolbar.addAction(self._open_action)
         toolbar.addAction(self._save_action)
         toolbar.addSeparator()
-        toolbar.addAction(self._add_row_action)
+        # toolbar.addAction(self._add_row_action)
+        # toolbar.addAction(self._delete_row_action)
+        toolbar.addAction(self._add_row_before_action)
+        toolbar.addAction(self._add_row_after_action)
         toolbar.addAction(self._delete_row_action)
 
+    # def _build_central_widget(self) -> None:
+    #     add_button = QPushButton("Add Row")
+    #     add_button.clicked.connect(self.add_row)
+
+    #     delete_button = QPushButton("Delete Selected")
+    #     delete_button.clicked.connect(self.delete_selected_rows)
+
+    #     button_row = QHBoxLayout()
+    #     button_row.addWidget(add_button)
+    #     button_row.addWidget(delete_button)
+    #     button_row.addStretch(1)
+
+    #     layout = QVBoxLayout()
+    #     layout.addWidget(self._table)
+    #     layout.addLayout(button_row)
+
+    #     central = QWidget()
+    #     central.setLayout(layout)
+
+    #     self.setCentralWidget(central)
+
     def _build_central_widget(self) -> None:
-        add_button = QPushButton("Add Row")
-        add_button.clicked.connect(self.add_row)
-
-        delete_button = QPushButton("Delete Selected")
-        delete_button.clicked.connect(self.delete_selected_rows)
-
-        button_row = QHBoxLayout()
-        button_row.addWidget(add_button)
-        button_row.addWidget(delete_button)
-        button_row.addStretch(1)
-
         layout = QVBoxLayout()
         layout.addWidget(self._table)
-        layout.addLayout(button_row)
 
         central = QWidget()
         central.setLayout(layout)
 
         self.setCentralWidget(central)
+
 
     # ------------------------------------------------------------------
     # File actions
@@ -324,8 +352,46 @@ class EcfgEditorWindow(QMainWindow):
     # Table actions
     # ------------------------------------------------------------------
 
-    def add_row(self) -> None:
-        row = self._table.rowCount()
+    # def add_row(self) -> None:
+    #     row = self._table.rowCount()
+    #     self._table.insertRow(row)
+
+    #     key_item = QTableWidgetItem("")
+    #     value_item = QTableWidgetItem("")
+
+    #     self._table.setItem(row, 0, key_item)
+    #     self._table.setItem(row, 1, value_item)
+
+    #     self._table.setCurrentItem(key_item)
+    #     self._table.editItem(key_item)
+
+    #     self._set_dirty(True)
+
+    def _current_or_last_row(self) -> int:
+        """
+        Return the current row if valid, otherwise the last row.
+
+        Returns 0 if the table is empty.
+        """
+        current_row = self._table.currentRow()
+
+        if current_row >= 0:
+            return current_row
+
+        row_count = self._table.rowCount()
+
+        if row_count == 0:
+            return 0
+
+        return row_count - 1
+
+
+    def _insert_empty_row(self, row: int) -> None:
+        """
+        Insert an empty editable row at the given row index.
+        """
+        row = max(0, min(row, self._table.rowCount()))
+
         self._table.insertRow(row)
 
         key_item = QTableWidgetItem("")
@@ -338,6 +404,31 @@ class EcfgEditorWindow(QMainWindow):
         self._table.editItem(key_item)
 
         self._set_dirty(True)
+
+
+    def add_row_before(self) -> None:
+        """
+        Insert a new row before the current row.
+        """
+        if self._table.rowCount() == 0:
+            self._insert_empty_row(0)
+            return
+
+        row = self._current_or_last_row()
+        self._insert_empty_row(row)
+
+
+    def add_row_after(self) -> None:
+        """
+        Insert a new row after the current row.
+        """
+        if self._table.rowCount() == 0:
+            self._insert_empty_row(0)
+            return
+
+        row = self._current_or_last_row()
+        self._insert_empty_row(row + 1)
+
 
     def delete_selected_rows(self) -> None:
         selected_rows = sorted(

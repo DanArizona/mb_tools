@@ -24,6 +24,31 @@ from PySide6.QtWidgets import (
 )
 
 
+def _make_password_row(password_edit: QLineEdit) -> QHBoxLayout:
+    """
+    Return a row containing a password field and a Show/Hide toggle button.
+    """
+    toggle_button = QPushButton("Show")
+    toggle_button.setCheckable(True)
+    toggle_button.setFixedWidth(70)
+
+    def update_echo_mode(checked: bool) -> None:
+        if checked:
+            password_edit.setEchoMode(QLineEdit.EchoMode.Normal)
+            toggle_button.setText("Hide")
+        else:
+            password_edit.setEchoMode(QLineEdit.EchoMode.Password)
+            toggle_button.setText("Show")
+
+    toggle_button.toggled.connect(update_echo_mode)
+
+    row = QHBoxLayout()
+    row.addWidget(password_edit, stretch=1)
+    row.addWidget(toggle_button)
+
+    return row
+
+
 class PasswordDialog(QDialog):
     """
     Simple password-entry dialog.
@@ -51,7 +76,8 @@ class PasswordDialog(QDialog):
         message_label.setWordWrap(True)
 
         form_layout = QFormLayout()
-        form_layout.addRow("Password:", self._password_edit)
+        # form_layout.addRow("Password:", self._password_edit)
+        form_layout.addRow("Password:", _make_password_row(self._password_edit))
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -111,9 +137,12 @@ class EcfgOpenPasswordDialog(QDialog):
         self._password_edit = QLineEdit()
         self._password_edit.setEchoMode(QLineEdit.EchoMode.Password)
 
+        # form_layout = QFormLayout()
+        # form_layout.addRow("File:", path_row)
+        # form_layout.addRow("Password:", self._password_edit)
         form_layout = QFormLayout()
         form_layout.addRow("File:", path_row)
-        form_layout.addRow("Password:", self._password_edit)
+        form_layout.addRow("Password:", _make_password_row(self._password_edit))
 
         self._buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -282,9 +311,12 @@ class NewPasswordDialog(QDialog):
         self._confirm_edit = QLineEdit()
         self._confirm_edit.setEchoMode(QLineEdit.EchoMode.Password)
 
+        # form_layout = QFormLayout()
+        # form_layout.addRow("Password:", self._password_edit)
+        # form_layout.addRow("Confirm:", self._confirm_edit)
         form_layout = QFormLayout()
-        form_layout.addRow("Password:", self._password_edit)
-        form_layout.addRow("Confirm:", self._confirm_edit)
+        form_layout.addRow("Password:", _make_password_row(self._password_edit))
+        form_layout.addRow("Confirm:", _make_password_row(self._confirm_edit))
 
         self._buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok
