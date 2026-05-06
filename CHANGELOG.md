@@ -17,16 +17,19 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 ---
 
 
-## [0.3.0] - Unreleased
+## [0.3.0] - 2026-05-06
 ### Added
-- Added `mb_tools.secure_config`, a password-based encrypted configuration module.
-- Added support for saving and loading encrypted dictionary-style `.ecfg` files.
-- Embedded the encryption salt directly in the `.ecfg` file, avoiding the need for a separate salt file.
-- Added helper function for retrieving a single encrypted configuration value by key.
+- Added `mb_tools.secure_config` for password-based encrypted `.ecfg` configuration files.
+- Added support for saving, loading, and reading values from encrypted dictionary-style config files.
+- Added Qt password dialogs for opening encrypted config files and setting new passwords.
+- Added a Qt `.ecfg` editor with open, save, save-as, row editing, password change, undo/redo, and recent-file support.
+
+### Changed
+- Added optional Qt dependency group via `mb_tools[qt]`.
 
 ### Notes
-- The password is supplied by the calling application and is not stored by the module.
-- The initial implementation is GUI-independent; PySide6 password dialogs and editor tools may be added later as optional helpers.
+- Core encrypted config support does not require PySide6.
+- Qt features are imported explicitly from `mb_tools.secure_config.qt_password` and `mb_tools.secure_config.qt_ecfg_editor`.
 
 
 ## [0.2.0] - 2026-05-04
