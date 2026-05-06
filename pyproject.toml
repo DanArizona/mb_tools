@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # Distribution name (what pip installs). Hyphen is fine here.
 name = "mb-tools"
-version = "0.3.0.dev0"
+version = "0.3.0"
 description = "Private utility package for MB_* tooling"
 readme = "README.md"
 requires-python = ">=3.9"
