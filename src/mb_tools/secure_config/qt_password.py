@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
 )
@@ -249,3 +250,126 @@ def get_ecfg_path_and_password_standalone(
         message=message,
         initial_dir=initial_dir,
     )
+
+
+class NewPasswordDialog(QDialog):
+    """
+    Dialog for entering and confirming a new password.
+
+    Returns QDialog.Accepted when the user clicks OK and the passwords match.
+    Returns QDialog.Rejected when the user clicks Cancel or closes the dialog.
+    """
+
+    def __init__(
+        self,
+        parent=None,
+        *,
+        title: str = "Set Password",
+        message: str = "Enter and confirm the password for this .ecfg file:",
+    ) -> None:
+        super().__init__(parent)
+
+        self.setWindowTitle(title)
+        self.setModal(True)
+        self.resize(450, 150)
+
+        message_label = QLabel(message)
+        message_label.setWordWrap(True)
+
+        self._password_edit = QLineEdit()
+        self._password_edit.setEchoMode(QLineEdit.EchoMode.Password)
+
+        self._confirm_edit = QLineEdit()
+        self._confirm_edit.setEchoMode(QLineEdit.EchoMode.Password)
+
+        form_layout = QFormLayout()
+        form_layout.addRow("Password:", self._password_edit)
+        form_layout.addRow("Confirm:", self._confirm_edit)
+
+        self._buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        self._buttons.accepted.connect(self._on_accept)
+        self._buttons.rejected.connect(self.reject)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(message_label)
+        main_layout.addLayout(form_layout)
+        main_layout.addWidget(self._buttons)
+
+        self._password_edit.textChanged.connect(self._update_ok_enabled)
+        self._confirm_edit.textChanged.connect(self._update_ok_enabled)
+
+        self._update_ok_enabled()
+        self._password_edit.setFocus()
+
+    def _update_ok_enabled(self) -> None:
+        ok_button = self._buttons.button(QDialogButtonBox.StandardButton.Ok)
+
+        if ok_button is None:
+            return
+
+        has_password = bool(self._password_edit.text())
+        has_confirm = bool(self._confirm_edit.text())
+
+        ok_button.setEnabled(has_password and has_confirm)
+
+    def _on_accept(self) -> None:
+        password = self._password_edit.text()
+        confirm = self._confirm_edit.text()
+
+        if password != confirm:
+            QMessageBox.warning(
+                self,
+                "Passwords Do Not Match",
+                "The password and confirmation password do not match.",
+            )
+            self._confirm_edit.selectAll()
+            self._confirm_edit.setFocus()
+            return
+
+        self.accept()
+
+    def password(self) -> str:
+        """Return the confirmed password."""
+        return self._password_edit.text()
+
+
+def get_new_password(
+    parent=None,
+    *,
+    title: str = "Set Password",
+    message: str = "Enter and confirm the password for this .ecfg file:",
+) -> str | None:
+    """
+    Show a new-password dialog.
+
+    Returns the password if accepted.
+    Returns None if cancelled.
+    """
+    dialog = NewPasswordDialog(parent, title=title, message=message)
+
+    if dialog.exec() == QDialog.DialogCode.Accepted:
+        return dialog.password()
+
+    return None
+
+
+def get_new_password_standalone(
+    *,
+    title: str = "Set Password",
+    message: str = "Enter and confirm the password for this .ecfg file:",
+) -> str | None:
+    """
+    Standalone convenience function for asking for a new password.
+
+    If a QApplication already exists, it is reused.
+    """
+    app = QApplication.instance()
+
+    if app is None:
+        app = QApplication([])
+
+    return get_new_password(title=title, message=message)
+
