@@ -163,3 +163,9 @@ cython_debug/
 defaults.json
 
 .vscode
+
+*.ecfg
+*.db
+*.sqlite
+*.sqlite3
+.env

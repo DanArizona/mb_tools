@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # Distribution name (what pip installs). Hyphen is fine here.
 name = "mb-tools"
-version = "0.3.0"
+version = "0.4.0.dev0"
 description = "Private utility package for MB_* tooling"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -19,6 +19,9 @@ dependencies = [
 qt = [
     "PySide6",
 ]
+schwab = [
+    "schwabdev",
+]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -26,6 +29,6 @@ package-dir = { "" = "src" }
 [tool.setuptools.packages.find]
 where = ["src"]
 
-# Include non-.py files inside the package (packaged defaults)
+# Include non-.py files inside the package.
 [tool.setuptools.package-data]
 mb_tools = ["defaults.env"]
