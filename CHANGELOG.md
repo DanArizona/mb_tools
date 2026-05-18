@@ -14,7 +14,11 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 ### Fixed
 -
 
----
+<br>
+
+## [0.4.0.dev1] - 2026-05-18
+### Added
+- Added `mb-window-survey`, a CLI utility that lists open windows with title, top-left coordinates, width, and height.
 
 
 ## [0.3.0] - 2026-05-06

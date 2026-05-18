@@ -5,6 +5,7 @@ This package provides generic geometry, tree, YAML-loading, validation,
 and reporting helpers for pseudo-widget layouts.
 """
 
+from .index import flatten_widget_stacks
 from .region import WidgetRegion
 from .report import format_widget_tree, print_widget_tree
 from .stack import VALID_COORD_MODES, WidgetStack
@@ -17,6 +18,7 @@ __all__ = [
     "WidgetRegion",
     "WidgetStack",
     "WidgetYamlError",
+    "flatten_widget_stacks",
     "format_widget_tree",
     "load_widget_stacks",
     "print_widget_tree",

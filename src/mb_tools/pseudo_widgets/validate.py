@@ -173,7 +173,8 @@ def _warn_parent_containment(
                         "child region is outside parent bounds "
                         f"child_rel={child_region.as_tuple()} "
                         f"parent_rel={parent_region.as_tuple()} "
-                        "coord='parent'",
+                        "coord='parent'; "
+                        "if this is a pop-out/cascading menu, set coord='popup'",
                     )
                 )
 
