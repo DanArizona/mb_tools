@@ -13,6 +13,7 @@ license = { text = "Proprietary" }
 authors = [{ name = "Dan Lamey" }]
 dependencies = [
     "cryptography",
+    "PyGetWindow",
 ]
 
 [project.optional-dependencies]
@@ -22,6 +23,9 @@ qt = [
 schwab = [
     "schwabdev",
 ]
+
+[project.scripts]
+mb-window-survey = "mb_tools.window_survey:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
