@@ -4,8 +4,8 @@ mb_tools.config
 Configuration loader for MB_* environment variables.
 
 Precedence:
-    1. Windows environment variables
-    2. User/project .env file
+    1. User/project .env file
+    2. Windows environment variables
     3. Packaged defaults.env file
 
 This module does not modify os.environ. It reads configuration values and
