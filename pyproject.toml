@@ -24,9 +24,12 @@ schwab = [
     "schwabdev",
 ]
 
+
 [project.scripts]
 mb-window-survey = "mb_tools.window_survey:main"
 mb-pwidget-tree = "mb_tools.pwidget_tree:main"
+mb-env-report = "mb_tools.env_report:main"
+
 
 [tool.setuptools]
 package-dir = { "" = "src" }
