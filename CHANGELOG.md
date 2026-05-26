@@ -20,6 +20,14 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 ### Added
 - Added `mb-window-survey`, a CLI utility that lists open windows with title, top-left coordinates, width, and height.
 
+### Added
+- Added `mb-pwidget-tree`, a CLI utility that lists pseudo-widget tree structure.
+
+### Changed
+- Changed `mb_tools.config` precedence so project `.env` values override Windows `MB_*` environment variables, while packaged `defaults.env` remains the lowest-priority fallback.
+
+### Added
+- Added `mb-env-report` command-line tool for reporting resolved `MB_*` configuration values and their sources.
 
 ## [0.3.0] - 2026-05-06
 ### Added
