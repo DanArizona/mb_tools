@@ -29,6 +29,7 @@ schwab = [
 mb-window-survey = "mb_tools.window_survey:main"
 mb-pwidget-tree = "mb_tools.pwidget_tree:main"
 mb-env-report = "mb_tools.env_report:main"
+mb-schwab-auth = "mb_tools.schwab_secure.cli:main"
 
 
 [tool.setuptools]
