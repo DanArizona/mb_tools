@@ -55,28 +55,6 @@ class SecureSchwabConfig:
 class SecureSchwabConfigError(Exception):
     """Raised when secure Schwab configuration is missing or invalid."""
 
-
-# def validate_secure_schwab_dict(data: Mapping[str, Any]) -> None:
-#     """
-#     Validate that the decrypted .ecfg dictionary contains required keys.
-#     """
-
-#     missing = [key for key in REQUIRED_ECFG_KEYS if key not in data]
-
-#     if missing:
-#         joined = ", ".join(missing)
-#         raise SecureSchwabConfigError(
-#             f"secure Schwab .ecfg file is missing required key(s): {joined}"
-#         )
-
-#     for key in REQUIRED_ECFG_KEYS:
-#         value = data[key]
-#         if not isinstance(value, str) or not value.strip():
-#             raise SecureSchwabConfigError(
-#                 f"secure Schwab .ecfg key {key!r} must be a non-empty string"
-#             )
-
-
 def validate_secure_schwab_dict(data: Mapping[str, Any]) -> None:
     """
     Validate that the decrypted .ecfg dictionary contains required keys.

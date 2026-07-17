@@ -95,7 +95,7 @@ cd mb_tools
 Install the active checkout in editable mode:
 
 ```cmd
-python -m pip install -e ".[qt,schwab]"
+python -m pip install -e ".[qt,schwab,test]"
 ```
 
 An editable installation uses the source files in the local repository. Switching Git branches therefore changes the Python source being imported.
@@ -103,7 +103,7 @@ An editable installation uses the source files in the local repository. Switchin
 After changing packaging metadata such as `pyproject.toml`, dependencies, package data, entry points, or the version, rerun:
 
 ```cmd
-python -m pip install -e ".[qt,schwab]"
+python -m pip install -e ".[qt,schwab,test]"
 ```
 
 ## Configuration
@@ -151,8 +151,8 @@ if config.errors:
 ### Example `.env`
 
 ```dotenv
-MB_SCANS=C:\Users\DanLa\Documents\github\stockScans
-MB_VAULT=\\MasterBot\MB_vault_Arjan
+MB_SCANS=C:\MB\scans
+MB_VAULT=\\SERVER\MB_vault
 MB_LOG_FOLDER=.\logs
 ```
 

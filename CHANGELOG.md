@@ -16,25 +16,32 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 
 <br>
 
-## [0.4.0] - 2026-07-14
-- Added schwab_secure package.
-- Encrypted Schwab configuration handling.
-- Schwab client creation and token setup.
-- The optional schwabdev dependency.
-- The mb-schwab-auth command-line tool.
-- .gitignore rules for encrypted configuration, token databases, SQLite files, and .env files.
+## [0.4.0] - YYYY-MM-DD
 
 ### Added
-- Added `mb-window-survey`, a CLI utility that lists open windows with title, top-left coordinates, width, and height.
-
-### Added
-- Added `mb-pwidget-tree`, a CLI utility that lists pseudo-widget tree structure.
+- Added encrypted Schwab configuration integration and Schwabdev client creation.
+- Added the `mb-schwab-auth` command-line tool.
+- Added pseudo-widget models, YAML loading, validation, flattening, and tree reporting.
+- Added the `mb-pwidget-tree` command-line tool.
+- Added the `mb-env-report` command-line tool.
+- Added the `mb-window-survey` command-line tool.
+- Added reusable window-discovery and positioning helpers.
+- Added window Z-order and overlap diagnostics.
+- Added PyYAML as a required dependency.
+- Added a 49-test automated regression suite covering configuration, encrypted configuration, pseudo-widgets, CLI entry points, windowing, and Schwab configuration.
 
 ### Changed
-- Changed `mb_tools.config` precedence so project `.env` values override Windows `MB_*` environment variables, while packaged `defaults.env` remains the lowest-priority fallback.
+- Changed configuration precedence to project `.env`, then Windows environment, then packaged defaults.
+- Raised the minimum supported Python version to 3.10.
+- Expanded installation, configuration, security, testing, and release documentation.
 
-### Added
-- Added `mb-env-report` command-line tool for reporting resolved `MB_*` configuration values and their sources.
+### Removed
+- Removed the unused Schwab Qt placeholder module.
+- Removed the legacy window-survey implementation.
+- Removed unused initial scaffold modules.
+
+### Fixed
+- Declared PyYAML so pseudo-widget commands work in clean installations.
 
 ## [0.3.0] - 2026-05-06
 ### Added
