@@ -14,14 +14,14 @@ authors = [{ name = "Dan Lamey" }]
 dependencies = [
     "cryptography",
     "PyGetWindow",
+    "PyYAML",
 ]
 
 [project.optional-dependencies]
-qt = [
-    "PySide6",
-]
-schwab = [
-    "schwabdev",
+qt = ["PySide6"]
+schwab = ["schwabdev"]
+test = [
+    "pytest",
 ]
 
 
