@@ -1,0 +1,41 @@
+win_main:
+  width: 400
+  height: 300
+  Xtl: 0
+  Ytl: 0
+  coord: screen
+  ptxt: Main test window
+
+  children:
+    panel:
+      width: 200
+      height: 100
+      Xtl: 10
+      Ytl: 20
+      coord: parent
+      ptxt: Test panel
+
+      children:
+        button_ok:
+          width: 80
+          height: 30
+          Xtl: 50
+          Ytl: 60
+          coord: root
+          ptxt: OK
+
+    status:
+      width: 150
+      height: 30
+      Xtl: 20
+      Ytl: 250
+      coord: parent
+      ptxt: Ready
+
+win_popup:
+  width: 200
+  height: 100
+  Xtl: 600
+  Ytl: 100
+  coord: screen
+  ptxt: Test popup
