@@ -16,7 +16,7 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 
 <br>
 
-## [0.4.0] - YYYY-MM-DD
+## [0.4.0] - 2026-07-17
 
 ### Added
 - Added encrypted Schwab configuration integration and Schwabdev client creation.
