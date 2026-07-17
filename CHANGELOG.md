@@ -16,7 +16,14 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 
 <br>
 
-## [0.4.0.dev1] - 2026-05-18
+## [0.4.0] - 2026-07-14
+- Added schwab_secure package.
+- Encrypted Schwab configuration handling.
+- Schwab client creation and token setup.
+- The optional schwabdev dependency.
+- The mb-schwab-auth command-line tool.
+- .gitignore rules for encrypted configuration, token databases, SQLite files, and .env files.
+
 ### Added
 - Added `mb-window-survey`, a CLI utility that lists open windows with title, top-left coordinates, width, and height.
 
