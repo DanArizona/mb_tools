@@ -12,6 +12,7 @@ EXPECTED_ENTRY_POINTS = {
     "mb-pwidget-tree": "mb_tools.pwidget_tree:main",
     "mb-window-survey": "mb_tools.window_survey:main",
     "mb-schwab-auth": "mb_tools.schwab_secure.cli:main",
+    "mb-scan-command": "mb_tools.scan_command:main",
 }
 
 

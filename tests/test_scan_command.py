@@ -1,0 +1,162 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from mb_tools.scan_command import (
+    find_command_location,
+    main,
+    publish_command,
+    wait_for_result,
+)
+
+
+def create_command_root(tmp_path: Path) -> Path:
+    root = tmp_path / "scan-control"
+
+    for directory_name in (
+        "incoming",
+        "processing",
+        "processed",
+        "failed",
+    ):
+        (root / directory_name).mkdir(parents=True)
+
+    return root
+
+
+def test_publish_command_uses_json_and_removes_temporary_file(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+
+    published_path = publish_command(
+        root=root,
+        command_id="test-start-0001",
+        payload={"command": "start"},
+    )
+
+    assert published_path == (
+        root / "incoming" / "test-start-0001.json"
+    )
+    assert published_path.exists()
+    assert not (
+        root / "incoming" / "test-start-0001.tmp"
+    ).exists()
+
+    payload = json.loads(published_path.read_text(encoding="utf-8"))
+    assert payload == {"command": "start"}
+
+
+def test_find_command_location_reports_processing(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_path = root / "processing" / "test-start-0002.json"
+    command_path.write_text(
+        '{"command": "start"}\n',
+        encoding="utf-8",
+    )
+
+    result = find_command_location(
+        root=root,
+        command_id="test-start-0002",
+    )
+
+    assert result == ("processing", command_path)
+
+
+def test_wait_for_result_finds_processed_command(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_path = root / "processed" / "test-start-0003.json"
+    command_path.write_text(
+        '{"command": "start"}\n',
+        encoding="utf-8",
+    )
+
+    result = wait_for_result(
+        root=root,
+        command_id="test-start-0003",
+        timeout=0.1,
+        poll_interval=0.01,
+    )
+
+    assert result == ("processed", command_path)
+
+
+def test_wait_for_result_finds_failed_command(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_path = root / "failed" / "test-stop-0001.json"
+    command_path.write_text(
+        '{"command": "stop"}\n',
+        encoding="utf-8",
+    )
+
+    result = wait_for_result(
+        root=root,
+        command_id="test-stop-0001",
+        timeout=0.1,
+        poll_interval=0.01,
+    )
+
+    assert result == ("failed", command_path)
+
+
+def test_main_publishes_start_command_from_environment(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    root = create_command_root(tmp_path)
+    monkeypatch.setenv("MB_SCAN_CONTROL", str(root))
+
+    result = main(
+        [
+            "start",
+            "--command-id",
+            "test-main-start-0001",
+        ]
+    )
+
+    assert result == 0
+
+    command_path = (
+        root / "incoming" / "test-main-start-0001.json"
+    )
+    assert command_path.exists()
+
+    payload = json.loads(command_path.read_text(encoding="utf-8"))
+    assert payload == {"command": "start"}
+
+    output = capsys.readouterr().out
+    assert "test-main-start-0001" in output
+    assert "start" in output
+
+
+def test_main_publishes_stop_command_using_explicit_root(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+
+    result = main(
+        [
+            "stop",
+            "--root",
+            str(root),
+            "--command-id",
+            "test-main-stop-0001",
+        ]
+    )
+
+    assert result == 0
+
+    command_path = (
+        root / "incoming" / "test-main-stop-0001.json"
+    )
+    payload = json.loads(command_path.read_text(encoding="utf-8"))
+
+    assert payload == {"command": "stop"}
