@@ -160,3 +160,55 @@ def test_main_publishes_stop_command_using_explicit_root(
     payload = json.loads(command_path.read_text(encoding="utf-8"))
 
     assert payload == {"command": "stop"}
+
+
+def test_main_publishes_pause_command_using_explicit_root(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_id = "test-main-pause-0001"
+
+    result = main(
+        [
+            "pause",
+            "--root",
+            str(root),
+            "--command-id",
+            command_id,
+        ]
+    )
+
+    assert result == 0
+
+    command_path = root / "incoming" / f"{command_id}.json"
+    assert command_path.exists()
+
+    payload = json.loads(command_path.read_text(encoding="utf-8"))
+    assert payload == {"command": "pause"}
+
+
+def test_main_publishes_resume_command_using_explicit_root(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_id = "test-main-resume-0001"
+
+    result = main(
+        [
+            "resume",
+            "--root",
+            str(root),
+            "--command-id",
+            command_id,
+        ]
+    )
+
+    assert result == 0
+
+    command_path = root / "incoming" / f"{command_id}.json"
+    assert command_path.exists()
+
+    payload = json.loads(command_path.read_text(encoding="utf-8"))
+    assert payload == {"command": "resume"}
+
+    

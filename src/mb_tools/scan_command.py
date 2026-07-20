@@ -17,6 +17,8 @@ ENV_SCAN_CONTROL = "MB_SCAN_CONTROL"
 COMMAND_PAYLOADS: dict[str, dict[str, str]] = {
     "start": {"command": "start"},
     "stop": {"command": "stop"},
+    "pause": {"command": "pause"},
+    "resume": {"command": "resume"},
 }
 
 REQUIRED_DIRECTORIES = (
