@@ -235,3 +235,66 @@ def test_main_publishes_export_wl_command_using_explicit_root(
 
     payload = json.loads(command_path.read_text(encoding="utf-8"))
     assert payload == {"command": "export_wl"}
+
+
+def test_main_publishes_replace_wl_symbols_command(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_id = "test-main-replace-wl-symbols-0001"
+
+    result = main(
+        [
+            "replace_wl_symbols",
+            "--symbols",
+            "aapl,msft",
+            "NVDA",
+            "aapl",
+            "--root",
+            str(root),
+            "--command-id",
+            command_id,
+        ]
+    )
+
+    assert result == 0
+
+    command_path = root / "incoming" / f"{command_id}.json"
+    assert command_path.exists()
+
+    payload = json.loads(command_path.read_text(encoding="utf-8"))
+    assert payload == {
+        "command": "replace_wl_symbols",
+        "symbols": ["AAPL", "MSFT", "NVDA"],
+    }
+
+
+def test_main_publishes_add_wl_symbols_command(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_id = "test-main-add-wl-symbols-0001"
+
+    result = main(
+        [
+            "add_wl_symbols",
+            "--symbols",
+            "tsla",
+            "AMD,NVDA",
+            "--root",
+            str(root),
+            "--command-id",
+            command_id,
+        ]
+    )
+
+    assert result == 0
+
+    command_path = root / "incoming" / f"{command_id}.json"
+    assert command_path.exists()
+
+    payload = json.loads(command_path.read_text(encoding="utf-8"))
+    assert payload == {
+        "command": "add_wl_symbols",
+        "symbols": ["TSLA", "AMD", "NVDA"],
+    }

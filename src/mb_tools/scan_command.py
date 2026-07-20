@@ -14,13 +14,22 @@ from typing import Sequence
 
 ENV_SCAN_CONTROL = "MB_SCAN_CONTROL"
 
-COMMAND_PAYLOADS: dict[str, dict[str, str]] = {
+COMMAND_PAYLOADS: dict[str, dict[str, object]] = {
     "start": {"command": "start"},
     "stop": {"command": "stop"},
     "pause": {"command": "pause"},
     "resume": {"command": "resume"},
     "export_wl": {"command": "export_wl"},
+    "replace_wl_symbols": {"command": "replace_wl_symbols"},
+    "add_wl_symbols": {"command": "add_wl_symbols"},
 }
+
+SYMBOL_COMMANDS = frozenset(
+    {
+        "replace_wl_symbols",
+        "add_wl_symbols",
+    }
+)
 
 REQUIRED_DIRECTORIES = (
     "incoming",
@@ -49,6 +58,16 @@ def build_parser() -> argparse.ArgumentParser:
         "command",
         choices=sorted(COMMAND_PAYLOADS),
         help="Scanner command to send.",
+    )
+
+    parser.add_argument(
+        "--symbols",
+        nargs="+",
+        metavar="SYMBOL",
+        help=(
+            "Symbols for replace_wl_symbols or add_wl_symbols. "
+            "Values may be separated by spaces or commas."
+        ),
     )
 
     parser.add_argument(
@@ -145,11 +164,28 @@ def validate_command_id(command_id: str) -> None:
         )
 
 
+def normalize_symbols(
+    values: Sequence[str] | None,
+) -> list[str]:
+    symbols: list[str] = []
+    seen: set[str] = set()
+
+    for value in values or ():
+        for raw_symbol in value.replace(",", " ").split():
+            symbol = raw_symbol.strip().upper()
+
+            if symbol and symbol not in seen:
+                symbols.append(symbol)
+                seen.add(symbol)
+
+    return symbols
+
+
 def publish_command(
     *,
     root: Path,
     command_id: str,
-    payload: dict[str, str],
+    payload: dict[str, object],
 ) -> Path:
     """
     Write a complete command as .tmp and atomically rename it to .json.
@@ -253,10 +289,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.poll_interval <= 0:
         parser.error("--poll-interval must be greater than zero.")
 
+    symbols = normalize_symbols(args.symbols)
+
+    if args.command in SYMBOL_COMMANDS:
+        if not symbols:
+            parser.error(
+                f"{args.command} requires one or more symbols "
+                "using --symbols."
+            )
+    elif symbols:
+        parser.error(
+            "--symbols is only valid with replace_wl_symbols "
+            "or add_wl_symbols."
+        )
+
     try:
         root = resolve_command_root(args.root)
         command_id = args.command_id or generate_command_id(args.command)
         payload = dict(COMMAND_PAYLOADS[args.command])
+        if symbols:
+            payload["symbols"] = symbols
 
         published_path = publish_command(
             root=root,
