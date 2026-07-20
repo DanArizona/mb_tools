@@ -211,4 +211,27 @@ def test_main_publishes_resume_command_using_explicit_root(
     payload = json.loads(command_path.read_text(encoding="utf-8"))
     assert payload == {"command": "resume"}
 
-    
+
+def test_main_publishes_export_wl_command_using_explicit_root(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_id = "test-main-export-wl-0001"
+
+    result = main(
+        [
+            "export_wl",
+            "--root",
+            str(root),
+            "--command-id",
+            command_id,
+        ]
+    )
+
+    assert result == 0
+
+    command_path = root / "incoming" / f"{command_id}.json"
+    assert command_path.exists()
+
+    payload = json.loads(command_path.read_text(encoding="utf-8"))
+    assert payload == {"command": "export_wl"}

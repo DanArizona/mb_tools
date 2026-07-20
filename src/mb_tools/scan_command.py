@@ -19,6 +19,7 @@ COMMAND_PAYLOADS: dict[str, dict[str, str]] = {
     "stop": {"command": "stop"},
     "pause": {"command": "pause"},
     "resume": {"command": "resume"},
+    "export_wl": {"command": "export_wl"},
 }
 
 REQUIRED_DIRECTORIES = (
