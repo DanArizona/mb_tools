@@ -23,7 +23,6 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-# Adjust this import if your secure_config API name is different.
 from mb_tools.secure_config import load_ecfg
 
 
