@@ -31,6 +31,7 @@ mb-pwidget-tree = "mb_tools.pwidget_tree:main"
 mb-env-report = "mb_tools.env_report:main"
 mb-schwab-auth = "mb_tools.schwab_secure.cli:main"
 mb-scan-command = "mb_tools.scan_command:main"
+mb-scan-status = "mb_tools.scan_status:main"
 
 
 [tool.setuptools]
