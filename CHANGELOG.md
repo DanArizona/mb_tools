@@ -4,7 +4,9 @@ All notable changes to **mb-tools** will be documented in this file.
 
 Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproject.toml`.
 
+
 ## [Unreleased]
+
 ### Added
 -
 
@@ -15,6 +17,28 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 -
 
 <br>
+
+## [0.5.0] - 2026-07-30
+
+### Added
+- Added the `mb-scan-command` command-line tool for publishing scanner commands.
+- Added support for `start`, `stop`, `pause`, `resume`, and Watchlist export commands.
+- Added commands for replacing and adding symbols in a remote ThinkOrSwim Watchlist.
+- Added atomic JSON command publication and optional waiting for ingress results.
+- Added the `mb-scan-status` command-line tool for reading scanner heartbeat status.
+- Added human-readable and JSON scanner-status output.
+- Added scanner-status classifications and process-friendly exit codes.
+- Expanded the automated regression suite to 72 tests.
+
+### Changed
+- Expanded README documentation for scanner commands, scanner status, `MB_SCAN_CONTROL`, the Qt encrypted-configuration editor, and Schwab authorization.
+- Modernized the proprietary license metadata.
+
+### Fixed
+- Clamped small negative scanner heartbeat ages to zero when computer clocks differ slightly.
+
+<br>
+
 
 ## [0.4.0] - 2026-07-17
 

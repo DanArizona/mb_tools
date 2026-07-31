@@ -39,7 +39,7 @@ Python 3.12 is the primary development version.
 
 ## Installation
 
-### Install stable release `v0.4.0`
+### Install stable release `v0.5.0`
 
 Activate the desired Conda environment first:
 
@@ -50,7 +50,7 @@ conda activate sea-green
 Install the stable release directly from its Git tag:
 
 ```cmd
-python -m pip install "git+https://github.com/DanArizona/mb_tools.git@v0.4.0"
+python -m pip install "git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
 ```
 
 Do not use `--user` when installing into an active Conda environment.
@@ -58,46 +58,31 @@ Do not use `--user` when installing into an active Conda environment.
 ### Install with Schwab support
 
 ```cmd
-python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.4.0"
+python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
 ```
 
 ### Install with Qt support
 
 ```cmd
-python -m pip install "mb-tools[qt] @ git+https://github.com/DanArizona/mb_tools.git@v0.4.0"
+python -m pip install "mb-tools[qt] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
 ```
 
 ### Install with both optional feature groups
 
 ```cmd
-python -m pip install "mb-tools[qt,schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.4.0"
+python -m pip install "mb-tools[qt,schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
 ```
 
-### Install the active development version
+### Install from the active `main` branch
 
-The active `main` branch currently uses version:
+The `main` branch is the active development line and may contain changes newer than the latest stable release.
 
-```text
-0.5.0.dev0
-```
+For reproducible installations, prefer a tagged stable release.
 
-Install or refresh the active development version:
+Install or refresh `mb_tools` from `main` without reinstalling dependencies:
 
 ```cmd
 python -m pip install --force-reinstall --no-deps "git+https://github.com/DanArizona/mb_tools.git@main"
-```
-
-Install the active development version with optional dependencies:
-
-```cmd
-python -m pip install --force-reinstall "mb-tools[qt,schwab] @ git+https://github.com/DanArizona/mb_tools.git@main"
-```
-
-The development version includes newer tools that are not part of the `v0.4.0` stable tag, including:
-
-```text
-mb-scan-command
-mb-scan-status
 ```
 
 ### Verify the installation
@@ -107,16 +92,10 @@ python -m pip show mb-tools
 python -c "import mb_tools; print(mb_tools.__version__); print(mb_tools.__file__)"
 ```
 
-For stable release `v0.4.0`, the expected version is:
+For stable release `v0.5.0`, the expected version is:
 
 ```text
-0.4.0
-```
-
-For the current active development line, the expected version is:
-
-```text
-0.5.0.dev0
+0.5.0
 ```
 
 ## Development installation
@@ -362,7 +341,7 @@ mb-pwidget-tree --help
 
 `mb-scan-command` publishes a JSON command to a local or remote ToS scanner command directory.
 
-This tool is currently available on the active `main` development line.
+This command is included in `v0.5.0` and later.
 
 Show help:
 
@@ -547,7 +526,7 @@ mb-scan-command start --wait 10 --poll-interval 0.5
 <command-root>\status\scanner_heartbeat.json
 ```
 
-This tool is currently available on the active `main` development line.
+This command is included in `v0.5.0` and later.
 
 Basic use:
 
@@ -781,7 +760,7 @@ A stopped scanner status intentionally returns exit code `1`.
 Install Qt support first:
 
 ```cmd
-python -m pip install "mb-tools[qt] @ git+https://github.com/DanArizona/mb_tools.git@v0.4.0"
+python -m pip install "mb-tools[qt] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
 ```
 
 For an editable development installation:
@@ -820,10 +799,10 @@ Schwabdev can then:
 Install Schwab support before using this command:
 
 ```cmd
-python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.4.0"
+python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
 ```
 
-For the current active development line:
+To install Schwab support from the active `main` branch instead:
 
 ```cmd
 python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@main"
@@ -971,12 +950,13 @@ v0.1.0
 v0.2.0
 v0.3.0
 v0.4.0
+v0.5.0
 ```
 
 Install a stable version by naming its tag explicitly:
 
 ```cmd
-python -m pip install "git+https://github.com/DanArizona/mb_tools.git@v0.4.0"
+python -m pip install "git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
 ```
 
 Install the latest active development version from `main`:
