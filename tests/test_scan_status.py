@@ -96,6 +96,25 @@ def test_read_scan_status_reports_healthy(
     assert report.payload["host"] == "El-Cheapo"
 
 
+def test_read_scan_status_clamps_future_heartbeat_age(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    write_heartbeat(
+        root,
+        heartbeat_at=TEST_NOW + timedelta(seconds=2),
+    )
+
+    report = read_scan_status(
+        root=root,
+        stale_after_s=30.0,
+        now_utc=TEST_NOW,
+    )
+
+    assert report.status == "HEALTHY"
+    assert report.age_seconds == 0.0
+
+
 def test_read_scan_status_reports_paused(
     tmp_path: Path,
 ) -> None:

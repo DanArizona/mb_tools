@@ -188,9 +188,10 @@ def read_scan_status(
         raise ValueError("now_utc must include a timezone.")
 
     effective_now = effective_now.astimezone(timezone.utc)
-    age_seconds = (
-        effective_now - heartbeat_at
-    ).total_seconds()
+    age_seconds = max(
+        0.0,
+        (effective_now - heartbeat_at).total_seconds(),
+    )
 
     loop_state = str(
         payload.get("loop_state", "")
