@@ -13,12 +13,13 @@ from typing import Sequence
 
 
 ENV_SCAN_CONTROL = "MB_SCAN_CONTROL"
-
 COMMAND_PAYLOADS: dict[str, dict[str, object]] = {
     "start": {"command": "start"},
     "stop": {"command": "stop"},
     "pause": {"command": "pause"},
     "resume": {"command": "resume"},
+    "suspend_exports": {"command": "suspend_exports"},
+    "resume_exports": {"command": "resume_exports"},
     "export_wl": {"command": "export_wl"},
     "replace_wl_symbols": {"command": "replace_wl_symbols"},
     "add_wl_symbols": {"command": "add_wl_symbols"},
@@ -30,7 +31,6 @@ SYMBOL_COMMANDS = frozenset(
         "add_wl_symbols",
     }
 )
-
 REQUIRED_DIRECTORIES = (
     "incoming",
     "processing",
@@ -59,7 +59,6 @@ def build_parser() -> argparse.ArgumentParser:
         choices=sorted(COMMAND_PAYLOADS),
         help="Scanner command to send.",
     )
-
     parser.add_argument(
         "--symbols",
         nargs="+",
@@ -78,7 +77,6 @@ def build_parser() -> argparse.ArgumentParser:
             "environment variable."
         ),
     )
-
     parser.add_argument(
         "--command-id",
         help=(
@@ -97,7 +95,6 @@ def build_parser() -> argparse.ArgumentParser:
             "in processed or failed. Default: publish and return immediately."
         ),
     )
-
     parser.add_argument(
         "--poll-interval",
         type=float,
@@ -114,7 +111,6 @@ def resolve_command_root(explicit_root: Path | None) -> Path:
         root = explicit_root
     else:
         configured_root = os.environ.get(ENV_SCAN_CONTROL)
-
         if not configured_root:
             raise ScanCommandError(
                 f"No command root supplied. Use --root or set "
@@ -129,7 +125,6 @@ def resolve_command_root(explicit_root: Path | None) -> Path:
 def validate_command_root(root: Path) -> None:
     if not root.exists():
         raise ScanCommandError(f"Command root does not exist: {root}")
-
     if not root.is_dir():
         raise ScanCommandError(f"Command root is not a directory: {root}")
 
@@ -156,7 +151,6 @@ def generate_command_id(command: str) -> str:
 def validate_command_id(command_id: str) -> None:
     if not command_id:
         raise ScanCommandError("Command ID must not be empty.")
-
     if not COMMAND_ID_PATTERN.fullmatch(command_id):
         raise ScanCommandError(
             "Command ID may contain only letters, numbers, periods, "
@@ -173,7 +167,6 @@ def normalize_symbols(
     for value in values or ():
         for raw_symbol in value.replace(",", " ").split():
             symbol = raw_symbol.strip().upper()
-
             if symbol and symbol not in seen:
                 symbols.append(symbol)
                 seen.add(symbol)
@@ -189,7 +182,6 @@ def publish_command(
 ) -> Path:
     """
     Write a complete command as .tmp and atomically rename it to .json.
-
     The temporary and final files reside in the same directory so the
     rename does not cross filesystems or SMB shares.
     """
@@ -204,7 +196,6 @@ def publish_command(
         raise ScanCommandError(
             f"Temporary command file already exists: {temporary_path}"
         )
-
     if published_path.exists():
         raise ScanCommandError(
             f"Published command file already exists: {published_path}"
@@ -222,7 +213,6 @@ def publish_command(
             os.fsync(output_file.fileno())
 
         os.replace(temporary_path, published_path)
-
     except Exception:
         try:
             temporary_path.unlink(missing_ok=True)
@@ -248,7 +238,6 @@ def find_command_location(
         "incoming",
     ):
         candidate = root / directory_name / filename
-
         if candidate.exists():
             return directory_name, candidate
 
@@ -268,7 +257,6 @@ def wait_for_result(
         failed_path = root / "failed" / f"{command_id}.json"
         if failed_path.exists():
             return "failed", failed_path
-
         processed_path = root / "processed" / f"{command_id}.json"
         if processed_path.exists():
             return "processed", processed_path
@@ -285,7 +273,6 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.wait < 0:
         parser.error("--wait must be zero or greater.")
-
     if args.poll_interval <= 0:
         parser.error("--poll-interval must be greater than zero.")
 
@@ -315,7 +302,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             command_id=command_id,
             payload=payload,
         )
-
         print(f"Command ID : {command_id}")
         print(f"Command    : {args.command}")
         print(f"Published  : {published_path}")
@@ -329,7 +315,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             timeout=args.wait,
             poll_interval=args.poll_interval,
         )
-
         if result is None:
             location = find_command_location(
                 root=root,
@@ -340,7 +325,6 @@ def main(argv: Sequence[str] | None = None) -> int:
                 f"Timed out after {args.wait:g} seconds waiting for a result.",
                 file=sys.stderr,
             )
-
             if location is None:
                 print(
                     "Current location: command file not found.",
@@ -356,7 +340,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 3
 
         result_name, result_path = result
-
         print(f"Result     : {result_name}")
         print(f"Result file: {result_path}")
 

@@ -42,7 +42,6 @@ def build_parser() -> argparse.ArgumentParser:
             "Read and interpret a ToS scanner heartbeat file."
         ),
     )
-
     parser.add_argument(
         "--root",
         type=Path,
@@ -62,7 +61,6 @@ def build_parser() -> argparse.ArgumentParser:
             f"Default: {DEFAULT_STALE_AFTER_S:g}."
         ),
     )
-
     parser.add_argument(
         "--json",
         action="store_true",
@@ -82,7 +80,6 @@ def parse_utc_timestamp(value: object) -> datetime:
 
     if timestamp_text.endswith("Z"):
         timestamp_text = timestamp_text[:-1] + "+00:00"
-
     timestamp = datetime.fromisoformat(timestamp_text)
 
     if timestamp.tzinfo is None:
@@ -111,14 +108,12 @@ def read_scan_status(
 
     try:
         root.stat()
-
     except FileNotFoundError:
         return ScanStatusReport(
             status="UNREACHABLE",
             heartbeat_path=heartbeat_path,
             detail=f"Command root does not exist: {root}",
         )
-
     except OSError as exc:
         return ScanStatusReport(
             status="UNREACHABLE",
@@ -137,14 +132,12 @@ def read_scan_status(
         heartbeat_text = heartbeat_path.read_text(
             encoding="utf-8"
         )
-
     except FileNotFoundError:
         return ScanStatusReport(
             status="MISSING",
             heartbeat_path=heartbeat_path,
             detail="Heartbeat file does not exist.",
         )
-
     except OSError as exc:
         return ScanStatusReport(
             status="UNREACHABLE",
@@ -154,7 +147,6 @@ def read_scan_status(
 
     try:
         payload = json.loads(heartbeat_text)
-
     except json.JSONDecodeError as exc:
         return ScanStatusReport(
             status="INVALID",
@@ -173,7 +165,6 @@ def read_scan_status(
         heartbeat_at = parse_utc_timestamp(
             payload.get("heartbeat_at_utc")
         )
-
     except (TypeError, ValueError) as exc:
         return ScanStatusReport(
             status="INVALID",
@@ -183,7 +174,6 @@ def read_scan_status(
         )
 
     effective_now = now_utc or datetime.now(timezone.utc)
-
     if effective_now.tzinfo is None:
         raise ValueError("now_utc must include a timezone.")
 
@@ -227,19 +217,15 @@ def read_scan_status(
     if paused or loop_state == "paused":
         status = "PAUSED"
         detail = "Scanner heartbeat is current and paused."
-
     elif loop_state == "busy":
         status = "BUSY"
         detail = "Scanner heartbeat is current and processing a job."
-
     elif loop_state == "waiting_for_operator":
         status = "WAITING"
         detail = "Scanner is waiting for operator confirmation."
-
     elif loop_state == "idle":
         status = "HEALTHY"
         detail = "Scanner heartbeat is current."
-
     else:
         status = "UNKNOWN"
         detail = (
@@ -291,6 +277,10 @@ def format_human_report(
                 (
                     "Paused         : "
                     f"{yes_no(payload.get('paused', False))}"
+                ),
+                (
+                    "Exports suspended: "
+                    f"{yes_no(payload.get('exports_suspended', False))}"
                 ),
                 (
                     "Sequence       : "
@@ -352,7 +342,6 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         root = resolve_command_root(args.root)
-
     except ScanCommandError as exc:
         print(f"mb-scan-status: error: {exc}", file=sys.stderr)
         return 2
