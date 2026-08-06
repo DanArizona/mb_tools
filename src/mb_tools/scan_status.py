@@ -223,6 +223,12 @@ def read_scan_status(
     elif loop_state == "waiting_for_operator":
         status = "WAITING"
         detail = "Scanner is waiting for operator confirmation."
+    elif loop_state == "exports_suspended":
+        status = "HEALTHY"
+        detail = (
+            "Scanner heartbeat is current; "
+            "exports are suspended."
+        )
     elif loop_state == "idle":
         status = "HEALTHY"
         detail = "Scanner heartbeat is current."

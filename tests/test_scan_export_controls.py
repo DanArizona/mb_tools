@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,7 @@ from mb_tools.scan_command import (
 from mb_tools.scan_status import (
     ScanStatusReport,
     format_human_report,
+    read_scan_status,
     report_as_json,
 )
 
@@ -143,5 +145,58 @@ def test_json_status_preserves_export_suspension(
 
     assert (
         output["heartbeat"]["exports_suspended"]
+        is True
+    )
+
+
+def test_exports_suspended_loop_state_is_operational(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "scan-control"
+    status_dir = root / "status"
+    status_dir.mkdir(parents=True)
+
+    now_utc = datetime(
+        2026,
+        8,
+        7,
+        20,
+        0,
+        0,
+        tzinfo=timezone.utc,
+    )
+    heartbeat_path = (
+        status_dir / "scanner_heartbeat.json"
+    )
+    heartbeat_path.write_text(
+        json.dumps(
+            {
+                "heartbeat_at_utc": (
+                    now_utc.isoformat()
+                ),
+                "loop_state": (
+                    "exports_suspended"
+                ),
+                "running": True,
+                "paused": False,
+                "exports_suspended": True,
+                "shutdown_requested": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = read_scan_status(
+        root=root,
+        now_utc=now_utc,
+    )
+
+    assert report.status == "HEALTHY"
+    assert report.detail == (
+        "Scanner heartbeat is current; "
+        "exports are suspended."
+    )
+    assert (
+        report.payload["exports_suspended"]
         is True
     )
