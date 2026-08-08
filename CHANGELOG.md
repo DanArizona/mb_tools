@@ -18,6 +18,20 @@ Versions are tagged in git as `vX.Y.Z` and correspond to the version in `pyproje
 
 <br>
 
+## [0.6.0] - 2026-08-07
+
+### Added
+- Added `suspend_exports` and `resume_exports` scanner commands for coordinating timed exports with Watchlist updates.
+- Added scanner-status reporting of the export-suspension state.
+
+### Changed
+- `mb-scan-status` now recognizes `exports_suspended` as a healthy operational scanner state.
+- Expanded scanner command and status documentation for scheduled export suspension and resumption.
+- Expanded the automated regression suite to 79 tests.
+
+<br>
+
+
 ## [0.5.0] - 2026-07-30
 
 ### Added

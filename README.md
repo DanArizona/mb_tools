@@ -39,7 +39,7 @@ Python 3.12 is the primary development version.
 
 ## Installation
 
-### Install stable release `v0.5.0`
+### Install stable release `v0.6.0`
 
 Activate the desired Conda environment first:
 
@@ -50,7 +50,7 @@ conda activate sea-green
 Install the stable release directly from its Git tag:
 
 ```cmd
-python -m pip install "git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
+python -m pip install "git+https://github.com/DanArizona/mb_tools.git@v0.6.0"
 ```
 
 Do not use `--user` when installing into an active Conda environment.
@@ -58,19 +58,19 @@ Do not use `--user` when installing into an active Conda environment.
 ### Install with Schwab support
 
 ```cmd
-python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
+python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.6.0"
 ```
 
 ### Install with Qt support
 
 ```cmd
-python -m pip install "mb-tools[qt] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
+python -m pip install "mb-tools[qt] @ git+https://github.com/DanArizona/mb_tools.git@v0.6.0"
 ```
 
 ### Install with both optional feature groups
 
 ```cmd
-python -m pip install "mb-tools[qt,schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
+python -m pip install "mb-tools[qt,schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.6.0"
 ```
 
 ### Install from the active `main` branch
@@ -92,10 +92,10 @@ python -m pip show mb-tools
 python -c "import mb_tools; print(mb_tools.__version__); print(mb_tools.__file__)"
 ```
 
-For stable release `v0.5.0`, the expected version is:
+For stable release `v0.6.0`, the expected version is:
 
 ```text
-0.5.0
+0.6.0
 ```
 
 ## Development installation
@@ -358,6 +358,8 @@ mb-scan-command --help
 | `pause`              | Pause scanner runtime operation                  |
 | `resume`             | Resume scanner runtime operation                 |
 | `export_wl`          | Export the current ThinkOrSwim Watchlist         |
+| `suspend_exports`    | Suspend scheduled scanner and Watchlist exports  |
+| `resume_exports`     | Resume scheduled scanner and Watchlist exports   |
 | `replace_wl_symbols` | Replace the personal `Default` Watchlist symbols |
 | `add_wl_symbols`     | Add symbols to the personal `Default` Watchlist  |
 
@@ -368,8 +370,28 @@ mb-scan-command start
 mb-scan-command pause
 mb-scan-command resume
 mb-scan-command export_wl
+mb-scan-command suspend_exports
+mb-scan-command resume_exports
 mb-scan-command stop
 ```
+
+#### Coordinating Watchlist updates with scheduled exports
+
+`pause` and `suspend_exports` serve different purposes.
+
+`pause` pauses scanner runtime operation. `suspend_exports` leaves the scanner operational while preventing scheduled exports from starting. This allows a Watchlist update to be performed without colliding with a timed ThinkOrSwim export.
+
+The normal coordination sequence is:
+
+```cmd
+mb-scan-command suspend_exports --wait 10
+mb-scan-command replace_wl_symbols --symbols AAPL MSFT NVDA --wait 10
+mb-scan-command resume_exports --wait 10
+```
+
+While exports are suspended, Watchlist symbol updates remain permitted, but scheduled exports and explicit export requests are prevented from starting.
+
+The `suspend_exports` and `resume_exports` commands are included in `v0.6.0` and later.
 
 Use an explicit command root:
 
@@ -527,6 +549,21 @@ mb-scan-command start --wait 10 --poll-interval 0.5
 ```
 
 This command is included in `v0.5.0` and later.
+
+Beginning with `v0.6.0`, the status output also reports whether scheduled exports are suspended.
+
+For example:
+
+```text
+Scanner status : HEALTHY
+Detail         : Scanner heartbeat is current; exports are suspended.
+Loop state     : exports_suspended
+Running        : yes
+Paused         : no
+Exports suspended: yes
+```
+
+`exports_suspended` is a healthy operational loop state when the heartbeat is current. It indicates that scheduled exports are deliberately suspended; it does not mean that the scanner command loop has failed.
 
 Basic use:
 
@@ -760,7 +797,7 @@ A stopped scanner status intentionally returns exit code `1`.
 Install Qt support first:
 
 ```cmd
-python -m pip install "mb-tools[qt] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
+python -m pip install "mb-tools[qt] @ git+https://github.com/DanArizona/mb_tools.git@v0.6.0"
 ```
 
 For an editable development installation:
@@ -799,7 +836,7 @@ Schwabdev can then:
 Install Schwab support before using this command:
 
 ```cmd
-python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
+python -m pip install "mb-tools[schwab] @ git+https://github.com/DanArizona/mb_tools.git@v0.6.0"
 ```
 
 To install Schwab support from the active `main` branch instead:
@@ -951,12 +988,13 @@ v0.2.0
 v0.3.0
 v0.4.0
 v0.5.0
+v0.6.0
 ```
 
 Install a stable version by naming its tag explicitly:
 
 ```cmd
-python -m pip install "git+https://github.com/DanArizona/mb_tools.git@v0.5.0"
+python -m pip install "git+https://github.com/DanArizona/mb_tools.git@v0.6.0"
 ```
 
 Install the latest active development version from `main`:
