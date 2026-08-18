@@ -70,6 +70,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--target-filename",
+        help=(
+            "Explicit output filename for export_wl. "
+            "Must be a CSV filename, not a path."
+        ),
+    )
+
+    parser.add_argument(
         "--root",
         type=Path,
         help=(
@@ -278,6 +286,33 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     symbols = normalize_symbols(args.symbols)
 
+    target_filename = (
+        args.target_filename.strip()
+        if args.target_filename is not None
+        else None
+    )
+
+    if args.target_filename is not None and not target_filename:
+        parser.error("--target-filename cannot be empty.")
+
+    if target_filename is not None:
+        if args.command != "export_wl":
+            parser.error(
+                "--target-filename is only valid with export_wl."
+            )
+
+        target_path = Path(target_filename)
+
+        if target_path.name != target_filename:
+            parser.error(
+                "--target-filename must be a filename, not a path."
+            )
+
+        if target_path.suffix.lower() != ".csv":
+            parser.error(
+                "--target-filename must end in .csv."
+            )
+
     if args.command in SYMBOL_COMMANDS:
         if not symbols:
             parser.error(
@@ -293,9 +328,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         root = resolve_command_root(args.root)
         command_id = args.command_id or generate_command_id(args.command)
+        # payload = dict(COMMAND_PAYLOADS[args.command])
+        # if symbols:
+        #     payload["symbols"] = symbols
         payload = dict(COMMAND_PAYLOADS[args.command])
+
         if symbols:
             payload["symbols"] = symbols
+
+        if target_filename is not None:
+            payload["target_filename"] = target_filename
 
         published_path = publish_command(
             root=root,
