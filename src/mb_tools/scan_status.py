@@ -22,6 +22,7 @@ OPERATIONAL_STATUSES = frozenset(
         "PAUSED",
         "BUSY",
         "WAITING",
+        "WARNING",
     }
 )
 
@@ -224,11 +225,33 @@ def read_scan_status(
         status = "WAITING"
         detail = "Scanner is waiting for operator confirmation."
     elif loop_state == "exports_suspended":
-        status = "HEALTHY"
-        detail = (
-            "Scanner heartbeat is current; "
-            "exports are suspended."
-        )
+        state_health = str(
+            payload.get(
+                "state_health",
+                "NORMAL",
+            )
+        ).strip().upper()
+
+        if state_health == "DEGRADED":
+            status = "DEGRADED"
+            detail = (
+                "Scanner heartbeat is current; "
+                "exports are suspended and "
+                "state health is DEGRADED."
+            )
+        elif state_health == "WARNING":
+            status = "WARNING"
+            detail = (
+                "Scanner heartbeat is current; "
+                "exports are suspended and "
+                "state health is WARNING."
+            )
+        else:
+            status = "HEALTHY"
+            detail = (
+                "Scanner heartbeat is current; "
+                "exports are suspended."
+            )
     elif loop_state == "idle":
         status = "HEALTHY"
         detail = "Scanner heartbeat is current."
@@ -295,6 +318,41 @@ def format_human_report(
                 f"PID            : {payload.get('pid', '(unknown)')}",
             ]
         )
+        state_health = payload.get(
+            "state_health"
+        )
+        if state_health is not None:
+            lines.append(
+                "State health    : "
+                f"{state_health}"
+            )
+
+        suspended_since = payload.get(
+            "exports_suspended_since_utc"
+        )
+        if suspended_since is not None:
+            lines.append(
+                "Suspended since : "
+                f"{suspended_since}"
+            )
+
+        suspension_age = payload.get(
+            "suspension_age_seconds"
+        )
+        if suspension_age is not None:
+            lines.append(
+                "Suspension age  : "
+                f"{suspension_age} seconds"
+            )
+
+        suspension_command = payload.get(
+            "suspension_command_id"
+        )
+        if suspension_command is not None:
+            lines.append(
+                "Suspension command: "
+                f"{suspension_command}"
+            )
 
         current_job = payload.get("current_job")
         if isinstance(current_job, dict):

@@ -224,6 +224,108 @@ def test_read_scan_status_reports_invalid_json(
     assert report.status == "INVALID"
 
 
+def test_main_warning_returns_zero(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    root = create_command_root(tmp_path)
+
+    heartbeat_path = write_heartbeat(
+        root,
+        heartbeat_at=datetime.now(
+            timezone.utc
+        ),
+        loop_state="exports_suspended",
+    )
+
+    payload = json.loads(
+        heartbeat_path.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    payload.update(
+        {
+            "exports_suspended": True,
+            "state_health": "WARNING",
+            "suspension_age_seconds": 90.0,
+        }
+    )
+
+    heartbeat_path.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setenv(
+        "MB_SCAN_CONTROL",
+        str(root),
+    )
+
+    result = main([])
+
+    assert result == 0
+
+    output = capsys.readouterr().out
+
+    assert (
+        "Scanner status : WARNING"
+        in output
+    )
+
+
+def test_main_degraded_returns_one(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    root = create_command_root(tmp_path)
+
+    heartbeat_path = write_heartbeat(
+        root,
+        heartbeat_at=datetime.now(
+            timezone.utc
+        ),
+        loop_state="exports_suspended",
+    )
+
+    payload = json.loads(
+        heartbeat_path.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    payload.update(
+        {
+            "exports_suspended": True,
+            "state_health": "DEGRADED",
+            "suspension_age_seconds": 120.0,
+        }
+    )
+
+    heartbeat_path.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setenv(
+        "MB_SCAN_CONTROL",
+        str(root),
+    )
+
+    result = main([])
+
+    assert result == 1
+
+    output = capsys.readouterr().out
+
+    assert (
+        "Scanner status : DEGRADED"
+        in output
+    )
+
+
 def test_main_reads_root_from_environment(
     tmp_path: Path,
     monkeypatch,
