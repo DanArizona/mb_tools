@@ -375,13 +375,16 @@ mb-scan-command resume_exports
 mb-scan-command stop
 ```
 
+
 #### Coordinating Watchlist updates with scheduled exports
 
 `pause` and `suspend_exports` serve different purposes.
 
-`pause` pauses scanner runtime operation. `suspend_exports` leaves the scanner operational while preventing scheduled exports from starting. This allows a Watchlist update to be performed without colliding with a timed ThinkOrSwim export.
+`pause` pauses scanner runtime operation.
 
-The normal coordination sequence is:
+`suspend_exports` leaves the command loop operational while preventing **scheduled** scanner and Watchlist exports from starting. It is used to create a protected GUI interval for coordinator-driven Watchlist observation and mutation.
+
+A simple manual replacement sequence is:
 
 ```cmd
 mb-scan-command suspend_exports --wait 10
@@ -389,9 +392,31 @@ mb-scan-command replace_wl_symbols --symbols AAPL MSFT NVDA --wait 10
 mb-scan-command resume_exports --wait 10
 ```
 
-While exports are suspended, Watchlist symbol updates remain permitted, but scheduled exports and explicit export requests are prevented from starting.
+The coordinator uses a stronger protected sequence:
+
+```text
+suspend scheduled exports
+        |
+        v
+explicit Watchlist observation or mutation
+        |
+        v
+explicit verification export
+        |
+        v
+resume scheduled exports
+```
+
+While exports are suspended:
+
+* scheduled `WL` and scanner exports are blocked;
+* Watchlist ADD and REPLACE operations remain permitted;
+* coordinator-directed explicit `export_wl` operations remain available for observation and verification.
+
+This distinction is important: `suspend_exports` prevents **scheduled export collisions**; it does not disable the explicit Watchlist operations needed to complete protected reconciliation.
 
 The `suspend_exports` and `resume_exports` commands are included in `v0.6.0` and later.
+
 
 Use an explicit command root:
 
@@ -547,6 +572,28 @@ mb-scan-command start --wait 10 --poll-interval 0.5
 ```text
 <command-root>\status\scanner_heartbeat.json
 ```
+
+#### Current ToS_scanner status scope
+
+In the current `ToS_scanner` v2 proof-of-concept architecture, this heartbeat is published by:
+
+```text
+scan_command_loop.py
+```
+
+Therefore `mb-scan-status` reports the health and logical runtime state of the **scanner command loop**.
+
+It does not independently prove that the separate:
+
+```text
+scan_main_v2p0dev0.py
+```
+
+Qt scanner/export process is alive.
+
+For the current POC, the operator manually ensures that both El-Cheapo processes are running.
+
+This limitation is expected to disappear if the command loop and scanner application are later merged into one authoritative El-Cheapo scanner service.
 
 This command is included in `v0.5.0` and later.
 
