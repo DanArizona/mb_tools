@@ -15,8 +15,13 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from .client import SchwabdevNotInstalledError, make_secure_schwab_client
-from .config import SecureSchwabConfigError
+from .client import (
+    SchwabdevNotInstalledError,
+    SchwabdevVersionError,
+    make_secure_schwab_client,
+)
+from .config import SecureSchwabConfigError, load_secure_schwab_config
+from .status import SchwabTokenStatusError, read_schwab_token_status
 
 
 DEFAULT_ECFG_NAME = "secure_schwabdev.ecfg"
@@ -62,6 +67,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--status",
+        action="store_true",
+        help=(
+            "Show access/refresh token lifetimes without refreshing tokens "
+            "or opening a browser."
+        ),
+    )
+
+    parser.add_argument(
         "--timeout",
         type=int,
         default=10,
@@ -69,6 +83,51 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     return parser
+
+
+def _remaining_text(seconds: float) -> str:
+    expired = seconds < 0
+    total = abs(int(seconds))
+    days, remainder = divmod(total, 86_400)
+    hours, remainder = divmod(remainder, 3_600)
+    minutes, secs = divmod(remainder, 60)
+    pieces = []
+    if days:
+        pieces.append(f"{days}d")
+    if hours or days:
+        pieces.append(f"{hours}h")
+    pieces.append(f"{minutes}m")
+    pieces.append(f"{secs}s")
+    value = " ".join(pieces)
+    return f"EXPIRED by {value}" if expired else value
+
+
+def _print_status(ecfg_path: Path, password: str) -> int:
+    config = load_secure_schwab_config(ecfg_path, password)
+    status = read_schwab_token_status(config)
+
+    print()
+    print("Schwab token status (read-only)")
+    print("=" * 79)
+    print(f"Token database       : {status.tokens_db}")
+    print(f"Observed UTC         : {status.observed_at.isoformat()}")
+    print(
+        "Access expires UTC  : "
+        f"{status.access_token_expires_at.isoformat()}"
+    )
+    print(
+        "Access remaining    : "
+        f"{_remaining_text(status.access_remaining.total_seconds())}"
+    )
+    print(
+        "Refresh expires UTC : "
+        f"{status.refresh_token_expires_at.isoformat()}"
+    )
+    print(
+        "Refresh remaining   : "
+        f"{_remaining_text(status.refresh_remaining.total_seconds())}"
+    )
+    return 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -86,6 +145,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     password = getpass.getpass("ecfg password: ")
 
     try:
+        if args.status:
+            return _print_status(ecfg_path, password)
         client = make_secure_schwab_client(
             ecfg_path,
             password,
@@ -94,7 +155,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     except SchwabdevNotInstalledError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 3
-    except SecureSchwabConfigError as exc:
+    except SchwabdevVersionError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 3
+    except (SecureSchwabConfigError, SchwabTokenStatusError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 4
     except Exception as exc:

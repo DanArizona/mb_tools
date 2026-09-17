@@ -10,6 +10,7 @@ import pytest
 import mb_tools.schwab_secure.client as client_module
 import mb_tools.schwab_secure.config as config_module
 from mb_tools.schwab_secure import (
+    SchwabdevVersionError,
     REQUIRED_ECFG_KEYS,
     SecureSchwabConfig,
     SecureSchwabConfigError,
@@ -202,6 +203,7 @@ def test_make_client_from_config_uses_schwabdev_without_network(
     client_constructor = Mock(return_value=fake_client)
 
     fake_schwabdev = ModuleType("schwabdev")
+    fake_schwabdev.__version__ = "4.0.0"
     fake_schwabdev.Client = client_constructor  # type: ignore[attr-defined]
 
     monkeypatch.setitem(
@@ -232,6 +234,26 @@ def test_make_client_from_config_uses_schwabdev_without_network(
         call_on_auth=fake_auth_callback,
         open_browser_for_auth=False,
     )
+
+
+def test_make_client_rejects_schwabdev_before_version_four(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config = SecureSchwabConfig(
+        app_key="A" * 16,
+        app_secret="B" * 16,
+        callback_url="https://127.0.0.1",
+        tokens_db=tmp_path / "tokens.db",
+        token_db_fernet_key="fake-fernet-key",
+    )
+    fake_schwabdev = ModuleType("schwabdev")
+    fake_schwabdev.__version__ = "3.0.5"
+    fake_schwabdev.Client = Mock()  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "schwabdev", fake_schwabdev)
+
+    with pytest.raises(SchwabdevVersionError, match="database locked"):
+        make_client_from_config(config)
 
 
 def test_make_secure_client_delegates_loading_and_creation(

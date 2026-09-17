@@ -17,10 +17,20 @@ from .config import (
 
 
 from .client import (
+    MINIMUM_SCHWABDEV_VERSION,
     SchwabdevNotInstalledError,
+    SchwabdevVersionError,
     console_auth_callback,
     make_client_from_config,
     make_secure_schwab_client,
+)
+from .status import (
+    DEFAULT_POLLING_REFRESH_MARGIN,
+    SCHWABDEV_INTERACTIVE_REFRESH_THRESHOLD,
+    SchwabCredentialPreflightError,
+    SchwabTokenStatus,
+    SchwabTokenStatusError,
+    read_schwab_token_status,
 )
 
 
@@ -33,7 +43,15 @@ __all__ = [
     "validate_schwabdev_key_shape",
     "validate_secure_schwab_dict",
     "SchwabdevNotInstalledError",
+    "SchwabdevVersionError",
+    "MINIMUM_SCHWABDEV_VERSION",
     "console_auth_callback",
     "make_client_from_config",
     "make_secure_schwab_client",
+    "DEFAULT_POLLING_REFRESH_MARGIN",
+    "SCHWABDEV_INTERACTIVE_REFRESH_THRESHOLD",
+    "SchwabCredentialPreflightError",
+    "SchwabTokenStatus",
+    "SchwabTokenStatusError",
+    "read_schwab_token_status",
 ]

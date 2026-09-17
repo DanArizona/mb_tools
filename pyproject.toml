@@ -19,7 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 qt = ["PySide6"]
-schwab = ["schwabdev"]
+schwab = ["schwabdev>=4.0.0,<5"]
 test = [
     "pytest",
 ]

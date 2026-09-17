@@ -4,6 +4,7 @@ Client factory for creating Schwabdev clients from encrypted .ecfg config.
 
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Callable
 import webbrowser
@@ -22,6 +23,49 @@ class SchwabdevNotInstalledError(ImportError):
 
         pip install -e ".[schwab]"
     """
+
+
+class SchwabdevVersionError(RuntimeError):
+    """Raised when an unsafe, unsupported Schwabdev release is installed."""
+
+
+MINIMUM_SCHWABDEV_VERSION = (4, 0, 0)
+
+
+def _installed_schwabdev_version(module: object) -> str:
+    module_version = getattr(module, "__version__", None)
+    if isinstance(module_version, str) and module_version:
+        return module_version
+    try:
+        return version("schwabdev")
+    except PackageNotFoundError as exc:
+        raise SchwabdevVersionError(
+            "Could not determine the installed Schwabdev version. "
+            'Reinstall with: pip install -e ".[schwab]"'
+        ) from exc
+
+
+def _numeric_version(value: str) -> tuple[int, ...]:
+    pieces: list[int] = []
+    for piece in value.split("."):
+        digits = "".join(character for character in piece if character.isdigit())
+        if not digits:
+            break
+        pieces.append(int(digits))
+    return tuple(pieces)
+
+
+def _require_supported_schwabdev(module: object) -> None:
+    installed = _installed_schwabdev_version(module)
+    parsed = _numeric_version(installed)
+    if parsed < MINIMUM_SCHWABDEV_VERSION:
+        raise SchwabdevVersionError(
+            "Schwabdev 4.0.0 or newer is required because earlier releases "
+            "can leave the shared token database locked after failed "
+            "authorization. "
+            f"Installed: {installed}. "
+            'Upgrade with: python -m pip install "schwabdev>=4,<5"'
+        )
 
 
 
@@ -70,6 +114,8 @@ def make_client_from_config(
             'Schwabdev is not installed. Install with: pip install -e ".[schwab]"'
         ) from exc
 
+    _require_supported_schwabdev(schwabdev)
+
     auth_callback = call_on_auth or console_auth_callback
 
     # Ensure parent folder exists before Schwabdev attempts to use the DB.
@@ -107,5 +153,4 @@ def make_secure_schwab_client(
         timeout=timeout,
         call_on_auth=call_on_auth,
     )
-
 

@@ -874,6 +874,10 @@ Do not forget the password used to encrypt an `.ecfg` file. The encrypted conten
 
 Creates a Schwabdev client from an encrypted Schwab `.ecfg` file.
 
+Schwab support requires Schwabdev 4.x. Earlier releases can leave the shared
+token database locked when interactive authorization is abandoned or fails;
+the client factory rejects those releases with an upgrade instruction.
+
 Schwabdev can then:
 
 * use an existing token database;
@@ -915,6 +919,16 @@ Specify a client timeout:
 ```cmd
 mb-schwab-auth --ecfg "C:\path\to\secure_schwabdev.ecfg" --timeout 20
 ```
+
+Inspect access- and refresh-token lifetime metadata without refreshing tokens
+or opening a browser:
+
+```cmd
+mb-schwab-auth --status
+```
+
+The status command reads only issue/expiry metadata from the token database.
+It does not display, decrypt, or modify the token values.
 
 The default `.ecfg` path is selected in this order:
 
