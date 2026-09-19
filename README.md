@@ -131,6 +131,11 @@ python -m pytest -q
 
 `mb_tools.config` resolves configuration variables whose names begin with `MB_`.
 
+The cross-project rules for programmatic secrets, service-specific `.ecfg`
+files, path resolution, machine ownership, and credential lifecycle are defined
+in the
+[`Credential Storage and Resolution Contract`](docs/Credential_Storage_and_Resolution_Contract.md).
+
 ### Precedence
 
 Configuration values are resolved in this order:
@@ -866,7 +871,9 @@ The editor can be used to:
 * add, edit, or remove configuration values;
 * save the encrypted file using a password.
 
-Encrypted configuration files may contain credentials or other sensitive configuration values. Store them outside the repository unless there is a deliberate reason to version them.
+Encrypted configuration files may contain credentials or other sensitive
+configuration values. Store them outside source repositories and never commit
+them. Encryption does not make a credential file safe to publish.
 
 Do not forget the password used to encrypt an `.ecfg` file. The encrypted contents cannot be recovered without the correct password.
 
@@ -994,7 +1001,9 @@ Never commit any of the following:
 * Locally generated credentials
 * Private certificate or key files
 
-Even encrypted files should normally remain outside the repository unless there is a deliberate reason to version them.
+Encrypted credential files must remain outside source repositories. Use tracked
+example files with unmistakable placeholders when field names need to be
+documented.
 
 Before publishing or tagging a release, review both the working tree and Git history for accidentally committed credentials.
 
