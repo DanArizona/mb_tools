@@ -348,6 +348,13 @@ mb-pwidget-tree --help
 
 This command is included in `v0.5.0` and later.
 
+For the production display-only architecture, El-Cheapo runs
+`scan_command_loop.py --display-only`. MasterBot publishes complete Focus
+snapshots with `replace_wl_symbols`; it does not export or read back a ToS CSV.
+The display-only loop rejects export commands, incremental additions, and
+`resume_exports`. Those commands remain documented for retained diagnostic
+operation outside display-only mode.
+
 Show help:
 
 ```cmd
@@ -529,7 +536,11 @@ Result file: \\El-Cheapo\SCANCTRL\processed\mb-export_wl-20260726-042302-8367318
 
 A `processed` result means the scanner accepted the command and submitted it to its job queue.
 
-It does not necessarily prove that a longer ThinkOrSwim GUI action has already finished. Use `mb-scan-status` to inspect the current job, scanner state, and most recent result.
+It does not prove that a ThinkOrSwim GUI action finished or that displayed
+membership matches the submitted Focus snapshot. `mb-scan-command` now prints
+an explicit `Accepted only` notice after a processed result. Use
+`mb-scan-status` to inspect the current job, operating mode, scanner state, and
+most recent unverified submission result.
 
 #### Explicit command IDs
 

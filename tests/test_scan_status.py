@@ -37,6 +37,7 @@ def write_heartbeat(
     running: bool = True,
     paused: bool = False,
     shutdown_requested: bool = False,
+    operating_mode: str = "scanner",
 ) -> Path:
     heartbeat_path = (
         root / "status" / "scanner_heartbeat.json"
@@ -45,6 +46,7 @@ def write_heartbeat(
     payload = {
         "schema_version": 1,
         "application": "ToS_scanner",
+        "operating_mode": operating_mode,
         "host": "El-Cheapo",
         "pid": 25156,
         "started_at_utc": "2026-07-26T08:00:00Z",
@@ -94,6 +96,72 @@ def test_read_scan_status_reports_healthy(
     assert report.age_seconds == 0.0
     assert report.payload is not None
     assert report.payload["host"] == "El-Cheapo"
+
+
+def test_display_only_suspension_is_healthy(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    heartbeat_path = write_heartbeat(
+        root,
+        loop_state="exports_suspended",
+        operating_mode="display_only",
+    )
+    payload = json.loads(
+        heartbeat_path.read_text(encoding="utf-8")
+    )
+    payload.update(
+        {
+            "exports_suspended": True,
+            "state_health": "NORMAL",
+            "suspension_command_id": "display-only-mode",
+        }
+    )
+    heartbeat_path.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    report = read_scan_status(
+        root=root,
+        now_utc=TEST_NOW,
+    )
+
+    assert report.status == "HEALTHY"
+    assert "routine ToS exports are disabled" in report.detail
+    assert "Operating mode : display_only" in format_human_report(report)
+
+
+def test_display_only_does_not_hide_degraded_gate(
+    tmp_path: Path,
+) -> None:
+    root = create_command_root(tmp_path)
+    heartbeat_path = write_heartbeat(
+        root,
+        loop_state="exports_suspended",
+        operating_mode="display_only",
+    )
+    payload = json.loads(
+        heartbeat_path.read_text(encoding="utf-8")
+    )
+    payload.update(
+        {
+            "exports_suspended": True,
+            "state_health": "DEGRADED",
+            "suspension_command_id": "display-only-mode",
+        }
+    )
+    heartbeat_path.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    report = read_scan_status(
+        root=root,
+        now_utc=TEST_NOW,
+    )
+
+    assert report.status == "DEGRADED"
 
 
 def test_read_scan_status_clamps_future_heartbeat_age(

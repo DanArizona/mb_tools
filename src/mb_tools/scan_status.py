@@ -187,6 +187,9 @@ def read_scan_status(
     loop_state = str(
         payload.get("loop_state", "")
     ).strip().lower()
+    operating_mode = str(
+        payload.get("operating_mode", "scanner")
+    ).strip().lower()
 
     shutdown_requested = bool(
         payload.get("shutdown_requested", False)
@@ -231,6 +234,27 @@ def read_scan_status(
                 "NORMAL",
             )
         ).strip().upper()
+        suspension_command_id = str(
+            payload.get("suspension_command_id", "")
+        ).strip().lower()
+
+        if (
+            operating_mode == "display_only"
+            and state_health == "NORMAL"
+            and suspension_command_id == "display-only-mode"
+        ):
+            status = "HEALTHY"
+            detail = (
+                "Display adapter heartbeat is current; "
+                "routine ToS exports are disabled."
+            )
+            return ScanStatusReport(
+                status=status,
+                heartbeat_path=heartbeat_path,
+                detail=detail,
+                age_seconds=age_seconds,
+                payload=payload,
+            )
 
         if state_health == "DEGRADED":
             status = "DEGRADED"
@@ -295,6 +319,10 @@ def format_human_report(
         lines.extend(
             [
                 f"Host           : {payload.get('host', '(unknown)')}",
+                (
+                    "Operating mode : "
+                    f"{payload.get('operating_mode', 'scanner')}"
+                ),
                 (
                     "Loop state     : "
                     f"{payload.get('loop_state', '(unknown)')}"

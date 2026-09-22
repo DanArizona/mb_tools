@@ -137,6 +137,42 @@ def test_main_publishes_start_command_from_environment(
     assert "start" in output
 
 
+def test_main_labels_processed_as_accepted_only(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    root = create_command_root(tmp_path)
+    command_id = "test-accepted-only-0001"
+    processed = root / "processed" / f"{command_id}.json"
+    processed.write_text(
+        '{"command": "start"}\n',
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        "mb_tools.scan_command.publish_command",
+        lambda **_kwargs: root / "incoming" / f"{command_id}.json",
+    )
+
+    result = main(
+        [
+            "start",
+            "--root",
+            str(root),
+            "--command-id",
+            command_id,
+            "--wait",
+            "0.1",
+        ]
+    )
+
+    assert result == 0
+    output = capsys.readouterr().out
+    assert "Accepted only" in output
+    assert "was not verified" in output
+
+
 def test_main_publishes_stop_command_using_explicit_root(
     tmp_path: Path,
 ) -> None:

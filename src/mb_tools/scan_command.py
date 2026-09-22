@@ -386,6 +386,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Result file: {result_path}")
 
         if result_name == "processed":
+            print(
+                "Accepted only: the command was queued; "
+                "ThinkOrSwim display state was not verified."
+            )
             return 0
 
         return 1
