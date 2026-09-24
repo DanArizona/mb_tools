@@ -948,13 +948,32 @@ mb-schwab-auth --status
 The status command reads only issue/expiry metadata from the token database.
 It does not display, decrypt, or modify the token values.
 
+Force a new browser authorization even while the current refresh token is
+still valid:
+
+```cmd
+mb-schwab-auth --force-reauthorize
+```
+
+This explicit mode requires all other Schwab clients to be stopped. It moves
+the current token database to a timestamped `before_forced_reauth` backup,
+requires browser OAuth, closes the new client, and verifies the replacement
+refresh-token lifetime. If authorization is interrupted or verification fails,
+the incomplete replacement is removed and the original database is restored.
+On success, the backup is retained until the operator deliberately removes it.
+`--status` and `--force-reauthorize` are mutually exclusive.
+
 The default `.ecfg` path is selected in this order:
 
 1. `MB_SCHWAB_ECFG`
 2. `MB_VAULT\secure_schwabdev.ecfg`
 3. `.\secure_schwabdev.ecfg`
 
-The command prompts for the encrypted-configuration password without displaying it on the terminal.
+The command prompts for the encrypted-configuration password without displaying
+it on the terminal. After decryption and required-field validation succeeds, it
+prints `Encrypted configuration accepted.` before token work begins. This
+message confirms the `.ecfg` password and structure only; it does not claim
+that Schwab authorization or token replacement has succeeded.
 
 A typical Schwab encrypted configuration contains values required by the local Schwabdev client, such as application credentials and callback configuration. Keep the exact field names consistent with the version of the Schwab configuration loader in use.
 

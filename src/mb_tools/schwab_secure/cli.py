@@ -18,9 +18,18 @@ from typing import Sequence
 from .client import (
     SchwabdevNotInstalledError,
     SchwabdevVersionError,
-    make_secure_schwab_client,
+    console_auth_callback,
+    make_client_from_config,
 )
-from .config import SecureSchwabConfigError, load_secure_schwab_config
+from .config import (
+    SecureSchwabConfig,
+    SecureSchwabConfigError,
+    load_secure_schwab_config,
+)
+from .reauthorize import (
+    SchwabForceReauthorizationError,
+    force_schwab_reauthorization,
+)
 from .status import SchwabTokenStatusError, read_schwab_token_status
 
 
@@ -66,12 +75,22 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
         "--status",
         action="store_true",
         help=(
             "Show access/refresh token lifetimes without refreshing tokens "
             "or opening a browser."
+        ),
+    )
+
+    mode.add_argument(
+        "--force-reauthorize",
+        action="store_true",
+        help=(
+            "Back up the current token database, force browser OAuth, "
+            "verify the replacement, and restore the backup on failure."
         ),
     )
 
@@ -102,8 +121,7 @@ def _remaining_text(seconds: float) -> str:
     return f"EXPIRED by {value}" if expired else value
 
 
-def _print_status(ecfg_path: Path, password: str) -> int:
-    config = load_secure_schwab_config(ecfg_path, password)
+def _print_status(config: SecureSchwabConfig) -> int:
     status = read_schwab_token_status(config)
 
     print()
@@ -144,14 +162,37 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     password = getpass.getpass("ecfg password: ")
 
+    client = None
     try:
+        config = load_secure_schwab_config(ecfg_path, password)
+        print("Encrypted configuration accepted.")
         if args.status:
-            return _print_status(ecfg_path, password)
-        client = make_secure_schwab_client(
-            ecfg_path,
-            password,
-            timeout=args.timeout,
-        )
+            return _print_status(config)
+        if args.force_reauthorize:
+            print()
+            print("Forced Schwab reauthorization")
+            print("=" * 79)
+            print(f"Token database : {config.tokens_db.expanduser().resolve()}")
+            print("Action         : back up database and require browser OAuth")
+            result = force_schwab_reauthorization(
+                config,
+                timeout=args.timeout,
+                call_on_auth=console_auth_callback,
+            )
+            print()
+            print("Forced Schwab reauthorization: PASS")
+            print("=" * 79)
+            print(f"Token database       : {result.tokens_db}")
+            print(
+                "Backup retained      : "
+                f"{result.backup_path or 'none (no prior database)'}"
+            )
+            print(
+                "Refresh expires UTC : "
+                f"{result.status.refresh_token_expires_at.isoformat()}"
+            )
+            return 0
+        client = make_client_from_config(config, timeout=args.timeout)
     except SchwabdevNotInstalledError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 3
@@ -161,9 +202,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (SecureSchwabConfigError, SchwabTokenStatusError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 4
+    except SchwabForceReauthorizationError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("ERROR: Schwab authorization interrupted.", file=sys.stderr)
+        return 130
     except Exception as exc:
         print(f"ERROR: Schwab authorization/refresh failed: {exc}", file=sys.stderr)
         return 1
+    finally:
+        if client is not None:
+            close = getattr(client, "close", None)
+            if callable(close):
+                close()
 
     print()
     print("Schwab client created successfully.")

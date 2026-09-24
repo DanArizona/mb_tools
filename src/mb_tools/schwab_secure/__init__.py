@@ -32,6 +32,12 @@ from .status import (
     SchwabTokenStatusError,
     read_schwab_token_status,
 )
+from .reauthorize import (
+    SchwabForceReauthorizationError,
+    SchwabForceReauthorizationResult,
+    force_schwab_reauthorization,
+    token_database_backup_path,
+)
 
 
 __all__ = [
@@ -54,4 +60,8 @@ __all__ = [
     "SchwabTokenStatus",
     "SchwabTokenStatusError",
     "read_schwab_token_status",
+    "SchwabForceReauthorizationError",
+    "SchwabForceReauthorizationResult",
+    "force_schwab_reauthorization",
+    "token_database_backup_path",
 ]
