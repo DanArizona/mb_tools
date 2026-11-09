@@ -12,6 +12,7 @@ import argparse
 import getpass
 import os
 import sys
+from datetime import timedelta
 from pathlib import Path
 from typing import Sequence
 
@@ -145,6 +146,12 @@ def _print_status(config: SecureSchwabConfig) -> int:
         "Refresh remaining   : "
         f"{_remaining_text(status.refresh_remaining.total_seconds())}"
     )
+    if status.refresh_remaining <= timedelta(0):
+        print("AUTHORIZATION: EXPIRED — browser reauthorization required.")
+        return 1
+    print("AUTHORIZATION: VALID — refresh token available.")
+    if status.access_remaining <= timedelta(0):
+        print("Access token expired; client can refresh it when needed.")
     return 0
 
 
@@ -220,7 +227,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     print()
     print("Schwab client created successfully.")
     print(f"Client type: {type(client).__name__}")
-    print("If Schwabdev required authorization, the token database should now be updated.")
+    try:
+        verified = read_schwab_token_status(config)
+    except SchwabTokenStatusError as exc:
+        print(f"AUTHORIZATION: UNVERIFIED — token database check failed: {exc}", file=sys.stderr)
+        return 1
+    if verified.refresh_remaining <= timedelta(0):
+        print("AUTHORIZATION: FAILED — refresh token is expired after client creation.", file=sys.stderr)
+        print("Run mb-schwab-auth to complete browser authorization.", file=sys.stderr)
+        return 1
+    print("AUTHORIZATION: VERIFIED — refresh token is valid.")
+    print(f"Refresh expires UTC: {verified.refresh_token_expires_at.isoformat()}")
     return 0
 
 
